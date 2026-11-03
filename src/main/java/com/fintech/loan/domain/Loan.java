@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-public class Loan {
+public abstract class Loan {
     private final Long id;
     private final Customer customer;           // "has-a" relationship
     private final BigDecimal principal;
@@ -12,7 +12,7 @@ public class Loan {
     private final int tenureMonths;
     private LoanStatus status;
 
-    public Loan(Long id, Customer customer, BigDecimal principal,
+    protected Loan(Long id, Customer customer, BigDecimal principal,
                 BigDecimal annualInterestRate, int tenureMonths) {
         if (principal.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Principal must be positive");
@@ -27,6 +27,9 @@ public class Loan {
         this.tenureMonths = tenureMonths;
         this.status = LoanStatus.Pending;      // every new loan starts PENDING
     }
+
+    public abstract String getLoanType();
+    public abstract BigDecimal calculateProcessingFee();
 
     public void approve() {
         if (status != LoanStatus.Pending) throw new IllegalStateException("Only PENDING loans can be approved");
@@ -48,9 +51,17 @@ public class Loan {
         return emi.setScale(2, RoundingMode.HALF_UP);
     }
 
+    protected BigDecimal percentOfPrincipal(String percent) {
+        return principal.multiply(new BigDecimal(percent))
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+    }
+
+
     public Long getId() { return id; }
     public Customer getCustomer() { return customer; }
     public BigDecimal getPrincipal() { return principal; }
+    public BigDecimal getAnnualInterestRate() { return annualInterestRate; }
+    public int getTenureMonths() { return tenureMonths; }
     public LoanStatus getStatus() { return status; }
 
     @Override

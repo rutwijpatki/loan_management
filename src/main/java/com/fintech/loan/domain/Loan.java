@@ -66,7 +66,7 @@ public abstract class Loan {
 
     @Override
     public String toString() {
-        return "Loan{id=" + id + ", customer=" + customer.getName() + ", principal=" + principal
+        return getLoanType() + "{id=" + id + ", customer=" + customer.getName() + ", principal=" + principal
                 + ", rate=" + annualInterestRate + "%, tenure=" + tenureMonths
                 + "m, status=" + status + "}";
     }

@@ -30,6 +30,8 @@ calculates EMIs and tracks application status.
 - [ ] JWT login with roles: CUSTOMER, LOAN_OFFICER, ADMIN
 - [ ] Angular dashboard and loan application form
 - [ ] Dockerized setup
+- [x] In-memory LoanRepository: save, find by id/status/customer, group, count, sort
+- [x] CustomerRegistry with unique PAN enforcement
 
 ## Project Structure
 
@@ -43,6 +45,8 @@ src/main/java/com/fintech/loan/domain/
 ├── Collateralized.java  # Interface for asset-backed loans (LTV)
 ├── LoanStatus.java      # PENDING, APPROVED, REJECTED
 └── App.java             # Demo runner
+├── LoanRepository.java  # In-memory store: List + HashMap, search, group, sort
+├── CustomerRegistry.java # Customers by PAN (unique)
 ```
 
 ## How to Run
@@ -65,7 +69,9 @@ Open in IntelliJ IDEA and run `App.java`.
   but only secured loans *can be* Collateralized. New loan types need just one new class.
 - **PersonalLoan does not implement Collateralized:** it is unsecured, so it uses an income
   check instead of LTV (Interface Segregation Principle).
+- - **List + Map in the repository:** the List keeps insertion order for listing; the HashMap
+    gives O(1) lookup by id. The trade-off is keeping both in sync on save and delete.
 
 ## Author
 
-Rutu Patki · rutupatki25@gmail.com
+Rutwij Patki · rutupatki25@gmail.com

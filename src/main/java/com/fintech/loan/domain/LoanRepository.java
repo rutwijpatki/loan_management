@@ -1,12 +1,16 @@
 package com.fintech.loan.domain;
 
+import com.fintech.loan.exception.LoanNotFoundException;
+
 import java.math.BigDecimal;
 import java.util.*;
 
-public class LoanRepository {
+public class LoanRepository implements Repository<Loan, Long> {
+
     private final List<Loan> loans = new ArrayList<>();
     private final Map<Long, Loan> loansById = new HashMap<>();
 
+    @Override
     public void save(Loan loan) {
         if (loansById.containsKey(loan.getId())) {
             throw new IllegalArgumentException("Loan id " + loan.getId() + " already exists");
@@ -15,15 +19,40 @@ public class LoanRepository {
         loansById.put(loan.getId(), loan);
     }
 
+    @Override
+    public Loan findybyID(Long aLong) {
+        return null;
+    }
+
+    @Override
+    public List<Loan> findall() {
+        return List.of();
+    }
+
+    @Override
     public Loan findById(Long id) {
         return loansById.get(id);
     }
 
+    public Loan findByIdOrThrow(Long id) {
+        Loan loan = loansById.get(id);
+        if (loan == null) {
+            throw new LoanNotFoundException(id);
+        }
+        return loan;
+    }
+    // =====================================================
+
+    @Override
     public List<Loan> findAll() {
         return Collections.unmodifiableList(loans);
     }
 
-    // ---------- Search (loops for now; Streams on Day 6) ----------
+    @Override
+    public int count() {
+        return loans.size();
+    }
+
     public List<Loan> findByStatus(LoanStatus status) {
         List<Loan> result = new ArrayList<>();
         for (Loan loan : loans) {
@@ -52,7 +81,7 @@ public class LoanRepository {
     }
 
     public Map<String, Integer> countByType() {
-        Map<String, Integer> counts = new TreeMap<>();   // keys sorted A→Z
+        Map<String, Integer> counts = new TreeMap<>();
         for (Loan loan : loans) {
             String type = loan.getLoanType();
             counts.put(type, counts.getOrDefault(type, 0) + 1);
@@ -61,7 +90,7 @@ public class LoanRepository {
     }
 
     public Map<String, BigDecimal> totalPrincipalByCustomer() {
-        Map<String, BigDecimal> totals = new LinkedHashMap<>();   // keeps insertion order
+        Map<String, BigDecimal> totals = new LinkedHashMap<>();
         for (Loan loan : loans) {
             String name = loan.getCustomer().getName();
             BigDecimal current = totals.getOrDefault(name, BigDecimal.ZERO);
@@ -70,7 +99,6 @@ public class LoanRepository {
         return totals;
     }
 
-    // ---------- Sorting ----------
     public List<Loan> sortedByPrincipalDesc() {
         List<Loan> copy = new ArrayList<>(loans);
         copy.sort(Comparator.comparing(Loan::getPrincipal).reversed());
@@ -83,15 +111,11 @@ public class LoanRepository {
         while (it.hasNext()) {
             Loan loan = it.next();
             if (loan.getStatus() == LoanStatus.Rejected) {
-                it.remove();                       // safe
-                loansById.remove(loan.getId());    // keep both structures in sync
+                it.remove();
+                loansById.remove(loan.getId());
                 removed++;
             }
         }
         return removed;
-    }
-
-    public int count() {
-        return loans.size();
     }
 }

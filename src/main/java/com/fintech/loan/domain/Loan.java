@@ -3,12 +3,14 @@ package com.fintech.loan.domain;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.Objects;
+import com.fintech.loan.exception.InvalidLoanStateException;
 
 public abstract class Loan {
     private final Long id;
-    private final Customer customer;           // "has-a" relationship
+    private final Customer customer;
     private final BigDecimal principal;
-    private final BigDecimal annualInterestRate; // e.g. 10.5 means 10.5%
+    private final BigDecimal annualInterestRate;
     private final int tenureMonths;
     private LoanStatus status;
 
@@ -25,23 +27,22 @@ public abstract class Loan {
         this.principal = principal;
         this.annualInterestRate = annualInterestRate;
         this.tenureMonths = tenureMonths;
-        this.status = LoanStatus.Pending;      // every new loan starts PENDING
+        this.status = LoanStatus.Pending;
     }
 
     public abstract String getLoanType();
     public abstract BigDecimal calculateProcessingFee();
 
     public void approve() {
-        if (status != LoanStatus.Pending) throw new IllegalStateException("Only PENDING loans can be approved");
+        if (status != LoanStatus.Pending) throw new InvalidLoanStateException(id,status,"approved");
         status = LoanStatus.Approved;
     }
 
     public void reject() {
-        if (status != LoanStatus.Pending) throw new IllegalStateException("Only PENDING loans can be rejected");
+        if (status != LoanStatus.Pending) throw new InvalidLoanStateException(id,status,"rejected");
         status = LoanStatus.Rejected;
     }
 
-    // EMI = P * r * (1+r)^n / ((1+r)^n - 1), where r = monthly rate
     public BigDecimal calculateEmi() {
         MathContext mc = MathContext.DECIMAL64;
         BigDecimal r = annualInterestRate.divide(BigDecimal.valueOf(1200), mc);
@@ -69,5 +70,15 @@ public abstract class Loan {
         return getLoanType() + "{id=" + id + ", customer=" + customer.getName() + ", principal=" + principal
                 + ", rate=" + annualInterestRate + "%, tenure=" + tenureMonths
                 + "m, status=" + status + "}";
+    }
+   @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if(!(o instanceof Loan other)) return false;
+        return Objects.equals(id, other.id);
+   }
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

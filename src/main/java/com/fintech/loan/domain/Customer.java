@@ -43,4 +43,15 @@ public class Customer {
         return "Customer{id=" + id + ", name='" + name + "', pan='" + pan
                 + "', monthlyIncome=" + monthlyIncome + "}";
     }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Customer other)) return false;
+        return pan.equals(other.pan);
+    }
+
+    @Override
+    public int hashCode() {
+        return pan.hashCode();
+    }
 }

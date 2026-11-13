@@ -32,21 +32,28 @@ calculates EMIs and tracks application status.
 - [ ] Dockerized setup
 - [x] In-memory LoanRepository: save, find by id/status/customer, group, count, sort
 - [x] CustomerRegistry with unique PAN enforcement
+- [x] Custom exception hierarchy: LoanAppException → DuplicateCustomer, LoanNotFound, InvalidLoanState, LoanEligibility
+- [x] Generic Repository<T, ID> interface implemented by LoanRepository
+- [x] CSV export with try-with-resources (checked IOException)
 
 ## Project Structure
 
 ```
-src/main/java/com/fintech/loan/domain/
-├── Customer.java        # Customer entity with PAN validation
-├── Loan.java            # Abstract base: EMI, status transitions
-├── HomeLoan.java        # Secured, max 360 months, LTV ≤ 80%
-├── CarLoan.java         # Secured, max 84 months, LTV ≤ 90%
-├── PersonalLoan.java    # Unsecured, max 60 months, income check
-├── Collateralized.java  # Interface for asset-backed loans (LTV)
-├── LoanStatus.java      # PENDING, APPROVED, REJECTED
-└── App.java             # Demo runner
-├── LoanRepository.java  # In-memory store: List + HashMap, search, group, sort
-├── CustomerRegistry.java # Customers by PAN (unique)
+ssrc/main/java/com/fintech/loan/
+├── domain/
+│   ├── Customer.java, Loan.java, HomeLoan.java, CarLoan.java, PersonalLoan.java
+│   ├── Collateralized.java, LoanStatus.java
+│   ├── Repository.java          # Generic Repository<T, ID>
+│   ├── LoanRepository.java, CustomerRegistry.java
+│   ├── LoanReportExporter.java  # CSV export, generic totals
+│   ├── InterviewTraps.java, Day5Demo.java
+│   └── App.java
+└── exception/
+    ├── LoanAppException.java    # Base (unchecked)
+    ├── DuplicateCustomerException.java
+    ├── LoanNotFoundException.java
+    ├── InvalidLoanStateException.java
+    └── LoanEligibilityException.java
 ```
 
 ## How to Run
@@ -69,8 +76,13 @@ Open in IntelliJ IDEA and run `App.java`.
   but only secured loans *can be* Collateralized. New loan types need just one new class.
 - **PersonalLoan does not implement Collateralized:** it is unsecured, so it uses an income
   check instead of LTV (Interface Segregation Principle).
-- - **List + Map in the repository:** the List keeps insertion order for listing; the HashMap
+- **List + Map in the repository:** the List keeps insertion order for listing; the HashMap
     gives O(1) lookup by id. The trade-off is keeping both in sync on save and delete.
+- **Unchecked custom exceptions with a common base:** business rule violations extend
+  LoanAppException (RuntimeException), so callers can catch one type for all business errors.
+  This maps directly to a global exception handler in Spring Boot.
+- **Generic Repository<T, ID>:** same shape as Spring Data's JpaRepository, so the move to JPA is easy.
+
 
 ## Author
 

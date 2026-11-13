@@ -1,5 +1,7 @@
 package com.fintech.loan.domain;
 
+import com.fintech.loan.exception.DuplicateCustomerException;
+
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
@@ -59,7 +61,7 @@ public class App {
 
         try {
             customers.register(new Customer(4L, "Fake Rutu", "x@y.com", "ABCDE1234F"));
-        } catch (IllegalArgumentException e) {
+        } catch (DuplicateCustomerException e) {
             System.out.println("\nBlocked: " + e.getMessage());
         }
 

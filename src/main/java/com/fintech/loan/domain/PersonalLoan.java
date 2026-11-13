@@ -1,6 +1,7 @@
 package com.fintech.loan.domain;
 
 import java.math.BigDecimal;
+import com.fintech.loan.exception.LoanEligibilityException;
 
 public class PersonalLoan extends Loan {   // no collateral, so no Collateralized
     private static final int MAX_TENURE_MONTHS = 60;
@@ -23,7 +24,7 @@ public class PersonalLoan extends Loan {   // no collateral, so no Collateralize
     @Override
     public void approve() {
         if (getCustomer().getMonthlyIncome().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalStateException("Personal loan needs verified income");
+            throw new LoanEligibilityException("Personal loan" + getId() +  "needs verified income");
         }
         super.approve();
     }
